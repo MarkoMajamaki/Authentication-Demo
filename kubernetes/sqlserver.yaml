@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: sqlserver
+  namespace: authentication-demo
+spec:
+  selector:
+    matchLabels:
+      app: sqlserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sqlserver
+    spec:
+      containers:
+      - name: sqlserver
+        image: mcr.microsoft.com/mssql/server:latest
+        ports:
+        - containerPort: 1433
+        volumeMounts:
+        - mountPath: "/var/opt/mssql/data"
+          name: sqldata-storage
+        env:
+        - name: "ACCEPT_EULA"
+          value: "Y"
+        - name: "SA_PASSWORD"
+          valueFrom:
+            secretKeyRef:
+              name: sqlserver-secrets
+              key: SA_PASSWORD 
+        - name: "MSSQL_PID"
+          value: "Developer"
+      volumes:
+      - name: sqldata-storage
+        persistentVolumeClaim:
+          claimName: sqlserver-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sqlserver
+  namespace: authentication-demo
+spec:
+  selector:
+    app: sqlserver
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 1433
+    targetPort: 1433
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: sqlserver-secrets
+  namespace: authentication-demo
+stringData:
+  SA_PASSWORD: mssQlp4ssword#
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sqlserver-config
+  namespace: authentication-demo
+data:
+  Database__Server: sqlserver
+  Database__Port: "1433"
+  Database__User: sa
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: sqlserver-pvc
+  namespace: authentication-demo
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

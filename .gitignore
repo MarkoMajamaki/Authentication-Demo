@@ -1,0 +1,12 @@
+backend/AuthApi/AuthApi/bin
+backend/AuthApi/AuthApi/obj
+backend/AuthApi/AuthApi.Application/bin
+backend/AuthApi/AuthApi.Application/obj
+backend/AuthApi/AuthApi.Domain/bin
+backend/AuthApi/AuthApi.Domain/obj
+backend/AuthApi/AuthApi.Infrastructure/bin
+backend/AuthApi/AuthApi.Infrastructure/obj
+backend/AuthApi/Tests/AuthApi.IntegrationTest/bin
+backend/AuthApi/Tests/AuthApi.IntegrationTest/obj
+backend/AuthApi/Tests/AuthApi.UnitTest/bin
+backend/AuthApi/Tests/AuthApi.UnitTest/obj
