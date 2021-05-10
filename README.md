@@ -1,8 +1,11 @@
 # Authentication demo
 
+**Repo is still under heavy development and some features might not working!**
+
 ## Used technologies:
 Frontend
 * Flutter
+
 Backend
 * ASP.NET
 * Kubernetes
