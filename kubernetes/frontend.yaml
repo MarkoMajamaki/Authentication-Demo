@@ -28,7 +28,7 @@ metadata:
   name: frontend
   namespace: authentication-demo
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: frontend
   ports:
