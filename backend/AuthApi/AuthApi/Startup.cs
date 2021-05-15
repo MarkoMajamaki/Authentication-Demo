@@ -39,8 +39,6 @@ namespace AuthApi
             services.AddMediatR(typeof(RegisterAdminCommand).GetTypeInfo().Assembly);
 
             services.AddHttpClient();
-            services.AddScoped<IFacebookAuthenticationService, FacebookAuthenticationService>();
-            services.Configure<FacebookAuthSettings>(Configuration.GetSection("FacebookAuth"));  
 
             DatabaseSettings dbSettings = Configuration.GetSection("Database").Get<DatabaseSettings>();
             string connectionString = $"Server={dbSettings.Server},{dbSettings.Port};Initial Catalog={dbSettings.Name};User={dbSettings.User};Password={dbSettings.Password}";
@@ -52,7 +50,13 @@ namespace AuthApi
             services.AddIdentity<ApplicationUser, IdentityRole>()  
                 .AddEntityFrameworkStores<AuthContext>()  
                 .AddDefaultTokenProviders();  
-  
+
+            services.AddScoped<IFacebookAuthenticationService, FacebookAuthenticationService>();
+            services.AddScoped<IGoogleAuthenticationService, GoogleAuthenticationService>();
+            services.AddScoped<ITokenGenerator, TokenGenerator>();
+            services.Configure<FacebookAuthSettings>(Configuration.GetSection("Facebook"));  
+            services.Configure<FacebookAuthSettings>(Configuration.GetSection("Google"));  
+
             // Add Facebook auth
             FacebookAuthSettings facebookAuth = Configuration.GetSection("Facebook").Get<FacebookAuthSettings>();
             if (facebookAuth != null)
@@ -61,6 +65,17 @@ namespace AuthApi
                 {
                     facebookOptions.AppId = facebookAuth.AppId;
                     facebookOptions.AppSecret = facebookAuth.AppSecret;
+                });
+            }
+
+            // Add Google auth
+            GoogleAuthSettings googleAuth = Configuration.GetSection("Google").Get<GoogleAuthSettings>();
+            if (googleAuth != null)
+            {
+                services.AddAuthentication().AddGoogle(googleOptions =>
+                {
+                    googleOptions.ClientId = googleAuth.ClientId;
+                    googleOptions.ClientSecret = googleAuth.ClientSecret;
                 });
             }
 

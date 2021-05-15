@@ -31,17 +31,17 @@ namespace AuthApi.Application
     public class LoginFacebookCommandHandler : ILoginFacebookCommandHandler
     {
         private readonly UserManager<ApplicationUser> _userManager;  
-        private readonly IFacebookAuthenticationService _facebookAuthenticationSercice;
-        private readonly IConfiguration _configuration;  
+        private readonly IFacebookAuthenticationService _facebookAuthenticationService;
+        private readonly ITokenGenerator _tokenGenerator;  
 
         public LoginFacebookCommandHandler(
             UserManager<ApplicationUser> userManager, 
             IFacebookAuthenticationService facebookAuthenticationSercice,
-            IConfiguration configuration)
+            ITokenGenerator tokenGenerator)
         {
             _userManager = userManager;
-            _facebookAuthenticationSercice = facebookAuthenticationSercice;
-            _configuration = configuration;
+            _facebookAuthenticationService = facebookAuthenticationSercice;
+            _tokenGenerator = tokenGenerator;
         }
 
         /// <summary>
@@ -49,14 +49,14 @@ namespace AuthApi.Application
         /// </summary>
         public async Task<JwtSecurityToken> Handle(LoginFacebookCommand request, CancellationToken cancellationToken)
         {
-            var validatedTokenResult = await _facebookAuthenticationSercice.ValidateAccessTokenAsync(request.Token);
+            var validatedTokenResult = await _facebookAuthenticationService.ValidateAccessTokenAsync(request.Token);
 
             if (!validatedTokenResult.Data.IsValid)
             {
-                throw new InvalidFacebookTokenException();
+                throw new InvalidTokenException();
             }
 
-            var userInfo = await _facebookAuthenticationSercice.GetUserInfoAsync(request.Token);
+            var userInfo = await _facebookAuthenticationService.GetUserInfoAsync(request.Token);
             
             var user = await _userManager.FindByEmailAsync(userInfo.Email);
 
@@ -76,41 +76,10 @@ namespace AuthApi.Application
                     throw new Exception();
                 }
 
-                return await GenerateAuthenticationResultForUserAsync(identityUser);
+                return await _tokenGenerator.GenerateTokenForUserAsync(identityUser);
             }
 
-            return await GenerateAuthenticationResultForUserAsync(user);            
-        }
-
-        /// <summary>
-        /// Create JWT token for user
-        /// </summary>
-        private async Task<JwtSecurityToken> GenerateAuthenticationResultForUserAsync(ApplicationUser user)
-        {
-            var userRoles = await _userManager.GetRolesAsync(user);  
-
-            var authClaims = new List<Claim>  
-            {  
-                new Claim(ClaimTypes.Name, user.UserName),  
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  
-            };  
-
-            foreach (var userRole in userRoles)  
-            {  
-                authClaims.Add(new Claim(ClaimTypes.Role, userRole));  
-            }  
-
-            string jwtSected = _configuration["JWT:Secret"];
-
-            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSected));  
-
-            return new JwtSecurityToken(  
-                issuer: _configuration["JWT:ValidIssuer"],  
-                audience: _configuration["JWT:ValidAudience"],  
-                expires: DateTime.Now.AddHours(3),  
-                claims: authClaims,  
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)  
-                );  
+            return await _tokenGenerator.GenerateTokenForUserAsync(user);            
         }
     }
 }

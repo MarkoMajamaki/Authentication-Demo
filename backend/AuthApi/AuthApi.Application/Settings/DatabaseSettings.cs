@@ -1,4 +1,4 @@
-namespace AuthApi
+namespace AuthApi.Application
 {
     public class DatabaseSettings
     {

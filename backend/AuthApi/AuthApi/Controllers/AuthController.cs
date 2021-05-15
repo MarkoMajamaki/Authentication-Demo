@@ -143,6 +143,33 @@ namespace AuthApi
             }
         }
 
+
+        /// <summary>
+        /// Login with Google token. If user is not registered do registering automatically.
+        /// </summary>
+        [HttpPost]  
+        [Route("login-google")]  
+        public async Task<IActionResult> LoginGoogle([FromBody] AccessTokenModel model)  
+        { 
+            try 
+            {
+                JwtSecurityToken token = await _mediator.Send(new LoginGoogleCommand(model.Token, "GOOGLE"), new CancellationToken());
+                
+                return Ok(new {
+                    token = new JwtSecurityTokenHandler().WriteToken(token),  
+                    expiration = token.ValidTo  
+                });
+            }
+            catch (InvalidPasswordException)
+            {
+                return Unauthorized();  
+            }
+            catch 
+            {
+                return Unauthorized("Something go wrong!");
+            }
+        }
+
         [HttpGet]
         [Route("Test")]  
         [Authorize]
