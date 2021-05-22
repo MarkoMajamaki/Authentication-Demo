@@ -23,7 +23,7 @@ class _ProfileViewState extends State<ProfileView> {
               width: 100,
               height: 100,
               child: Image.network(
-                args.PictureUrl,
+                args.pictureUrl,
                 fit: BoxFit.fill,
               ),
             ),
@@ -58,7 +58,7 @@ class ProfileViewArgs {
   final String firstName;
   final String lastName;
   final String email;
-  final String PictureUrl;
+  final String pictureUrl;
 
-  ProfileViewArgs(this.firstName, this.lastName, this.email, this.PictureUrl);
+  ProfileViewArgs(this.firstName, this.lastName, this.email, this.pictureUrl);
 }

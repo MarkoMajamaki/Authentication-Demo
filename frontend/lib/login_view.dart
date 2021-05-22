@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:frontend/auth/user.dart';
 
-import 'package:frontend/facebook/profile.dart';
 import 'package:frontend/profile_view.dart';
 import 'facebook/facebook_login.dart';
-import 'facebook/token.dart';
 
 class LoginView extends StatefulWidget {
   LoginView({Key? key}) : super(key: key);
@@ -55,17 +54,16 @@ class _LoginViewState extends State<LoginView> {
       env["Facebook_AppSecret"]!,
     );
 
-    Token token = await fb.getToken();
-    Profile profile = await fb.getProfile(token);
+    User user = await fb.authenticate();
 
     Navigator.pushNamed(
       context,
       ProfileView.route,
       arguments: ProfileViewArgs(
-        profile.firstName,
-        profile.lastName,
-        profile.email,
-        profile.picture.data.url,
+        user.firstName,
+        user.lastName,
+        user.email,
+        user.pictureUri,
       ),
     );
   }
