@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:frontend/auth/user.dart';
-
 import 'package:frontend/profile_view.dart';
 import 'facebook/facebook_login.dart';
+import 'google/google_login.dart';
 
 class LoginView extends StatefulWidget {
   LoginView({Key? key}) : super(key: key);
@@ -46,7 +46,7 @@ class _LoginViewState extends State<LoginView> {
   }
 
   ///
-  /// Login with facebook
+  /// Login with Facebook
   ///
   void _loginFacebook() async {
     FacebookLogin fb = FacebookLogin(
@@ -60,15 +60,34 @@ class _LoginViewState extends State<LoginView> {
       context,
       ProfileView.route,
       arguments: ProfileViewArgs(
-        user.firstName,
-        user.lastName,
+        user.name,
         user.email,
         user.pictureUri,
       ),
     );
   }
 
-  void _loginGoogle() {}
+  ///
+  /// Login with Google
+  ///
+  void _loginGoogle() async {
+    GoogleLogin gl = GoogleLogin(
+      env["Google_ClientId"]!,
+      env["Google_ClientSecret"]!,
+    );
+
+    User user = await gl.authenticate();
+
+    Navigator.pushNamed(
+      context,
+      ProfileView.route,
+      arguments: ProfileViewArgs(
+        user.name,
+        user.email,
+        user.pictureUri,
+      ),
+    );
+  }
 
   void _loginApple() {}
 }

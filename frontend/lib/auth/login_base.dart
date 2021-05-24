@@ -1,4 +1,3 @@
-import 'package:frontend/auth/auth_service.dart';
 import 'package:frontend/auth/user.dart';
 
 abstract class LoginBase {

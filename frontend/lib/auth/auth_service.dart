@@ -1,14 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:frontend/auth/token.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AuthService {
+  static HttpServer? _server;
+
   ///
-  /// Get token
+  /// Get code by authenticating
   ///
-  Future<Token> getToken({
+  Future<String> getCode({
     required String authUrl,
     required String appId,
     required String appSecret,
@@ -16,55 +17,68 @@ class AuthService {
     required String scope,
     required String state,
   }) async {
-    Stream<String> onCode = await _server();
+    Stream<String> codeStrem = await _createServer();
 
     String url = "$authUrl"
         "?client_id=$appId"
         "&redirect_uri=$redirectUrl"
         "&scope=$scope"
-        "&response_type=token"
-        '&state=$state';
+        "&response_type=code"
+        "&state=$state";
 
-    if (await canLaunch(url)) {
-      await launch(url);
+    String fixedUrl = Uri.parse(url).toString();
+
+    if (await canLaunch(fixedUrl)) {
+      await launch(fixedUrl);
     } else {
       throw 'Could not launch $url';
     }
 
-    final String code = await onCode.first;
-    return Token("null", "null", 1);
-    /*
-    final http.Response response = await http.get(Uri.parse(
-        "https://graph.facebook.com/v2.2/oauth/access_token?client_id=$appId&redirect_uri=http://localhost:8080/&client_secret=$appSecret&code=$code"));
-    return new Token.fromMap(jsonDecode(response.body));
-    */
+    // Await to get code from redirect
+    return await codeStrem.first;
   }
 
   ///
   /// Launch simple server to handle requests
   ///
-  Future<Stream<String>> _server() async {
-    final StreamController<String> onCode = new StreamController();
+  Future<Stream<String>> _createServer() async {
+    final StreamController<String> codeController = new StreamController();
 
-    HttpServer server =
-        await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
+    if (_server == null) {
+      _server = await HttpServer.bind(InternetAddress.loopbackIPv4, 8080);
 
-    server.listen((HttpRequest request) async {
-      final String? code = request.uri.queryParameters["code"];
+      _server!.listen((HttpRequest request) async {
+        // Get code from query parameters
+        final String? code = request.uri.queryParameters["code"];
 
-      request.response
-        ..statusCode = 200
-        ..headers.set("Content-Type", ContentType.html.mimeType)
-        ..write("<html><h1>You can now close this window</h1></html>");
+        // Show correct message in redirect page depending loging success
+        String loginMessage;
+        if (code != null) {
+          loginMessage = "Login successful! You can now close this window";
+        } else {
+          loginMessage = "Login failed! You can now close this window";
+        }
 
-      await request.response.close();
-      await server.close(force: true);
-      if (code != null) {
-        onCode.add(code);
-        await onCode.close();
-      }
-    });
+        // Form html page resopnse
+        request.response
+          ..statusCode = 200
+          ..headers.set("Content-Type", ContentType.html.mimeType)
+          ..write("<html><h1>$loginMessage<h1></html>");
 
-    return onCode.stream;
+        // ??
+        await request.response.close();
+
+        // Close localhost server
+        await _server!.close(force: true);
+        _server = null;
+
+        if (code != null) {
+          codeController.add(code);
+        }
+        await codeController.close();
+      });
+    }
+
+    return codeController.stream;
   }
 }

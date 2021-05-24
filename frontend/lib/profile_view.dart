@@ -29,7 +29,7 @@ class _ProfileViewState extends State<ProfileView> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Text("${args.firstName} ${args.lastName}"),
+              child: Text("${args.name}"),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 0),
@@ -55,10 +55,9 @@ class _ProfileViewState extends State<ProfileView> {
 }
 
 class ProfileViewArgs {
-  final String firstName;
-  final String lastName;
+  final String name;
   final String email;
   final String pictureUrl;
 
-  ProfileViewArgs(this.firstName, this.lastName, this.email, this.pictureUrl);
+  ProfileViewArgs(this.name, this.email, this.pictureUrl);
 }
