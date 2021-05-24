@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:frontend/login_view.dart';
+import 'package:frontend/services/servicelocator.dart';
+import 'package:frontend/views/login_view.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/profile_view.dart';
+import 'package:frontend/views/profile_view.dart';
 
 void main() async {
+  setupServiceLocator();
   await load(fileName: ".env");
   runApp(MyApp());
 }

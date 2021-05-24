@@ -1,33 +1,27 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:frontend/auth/auth_service.dart';
+import 'package:frontend/auth/google/profile.dart';
 import 'package:frontend/auth/login_base.dart';
 import 'package:frontend/auth/token.dart';
 import 'package:frontend/auth/user.dart';
-import 'package:frontend/facebook/profile.dart';
+
 import 'package:http/http.dart' as http;
 
-class FacebookLogin extends LoginBase {
-  String _authUrl = "https://www.facebook.com/dialog/oauth";
+class GoogleLogin extends LoginBase {
+  String _authUrl = "https://accounts.google.com/o/oauth2/v2/auth";
   String _redirectUrl = "http://localhost:8080/";
-  String _scope = "public_profile";
-  String _profileUrl = "https://graph.facebook.com/v2.8/me";
-  String _state = "fbAuth";
-  String _accessTokenUrl =
-      "https://graph.facebook.com/v10.0/oauth/access_token";
+  String _state = "googleAuth";
+  String _accessTokenUrl = "https://oauth2.googleapis.com/token";
+
+  String _scope =
+      "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+  String _profileUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
 
   AuthService _authService = AuthService();
 
-  FacebookLogin(appId, appSecret)
-      : super(
-          appId = appId,
-          appSecret = appSecret,
-        );
+  GoogleLogin(String appId, String appSecret) : super(appId, appSecret);
 
-  ///
-  /// Authenticate with facebook
-  ///
   @override
   Future<User> authenticate() async {
     String code = await _authService.getCode(
@@ -40,13 +34,14 @@ class FacebookLogin extends LoginBase {
     );
 
     Token token = await getToken(code);
-    Profile facebookProfile = await _getProfile(token.accessToken);
+    Profile googleProfile = await _getProfile(token.accessToken);
 
     return User(
-        facebookProfile.id,
-        "$facebookProfile.firstName $facebookProfile.lastName",
-        facebookProfile.email,
-        facebookProfile.picture.data.url);
+      googleProfile.id,
+      googleProfile.name,
+      googleProfile.email,
+      googleProfile.pictureUrl,
+    );
   }
 
   ///
@@ -55,12 +50,13 @@ class FacebookLogin extends LoginBase {
   Future<Token> getToken(String code) async {
     // Exchanging Code for an Access Token
     String url = "$_accessTokenUrl"
-        "?client_id=$appId"
-        "&redirect_uri=$_redirectUrl"
+        "?code=$code"
+        "&client_id=$appId"
         "&client_secret=$appSecret"
-        "&code=$code";
+        "&redirect_uri=$_redirectUrl"
+        "&grant_type=authorization_code";
 
-    final response = await http.get(Uri.parse(url));
+    final response = await http.post(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return Token.fromMap(jsonDecode(response.body));
@@ -74,8 +70,8 @@ class FacebookLogin extends LoginBase {
   ///
   Future<Profile> _getProfile(String accessToken) async {
     String url = "$_profileUrl"
-        "?access_token=$accessToken"
-        "&fields=first_name,last_name,picture,email,id";
+        "?alt=json"
+        "&access_token=$accessToken";
 
     final response = await http.get(Uri.parse(url));
 
