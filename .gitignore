@@ -12,3 +12,5 @@ backend/AuthApi/Tests/AuthApi.UnitTest/bin
 backend/AuthApi/Tests/AuthApi.UnitTest/obj
 deployment/certs
 deployment/data
+frontend/android/app/mykey.jks
+frontend/ios/build/

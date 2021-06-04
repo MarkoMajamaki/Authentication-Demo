@@ -7,6 +7,7 @@ import 'package:frontend/widgets/google_login_button.dart';
 enum LoginViewModes { Login, Signin }
 
 class LoginView extends StatefulWidget {
+  static String route = "LoginView";
   LoginView({Key? key}) : super(key: key);
 
   @override

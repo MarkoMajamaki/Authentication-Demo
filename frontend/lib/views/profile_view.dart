@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:frontend/services/google_login_service.dart';
+import 'package:frontend/services/navigation_service.dart';
+import 'package:frontend/services/servicelocator.dart';
 
 class ProfileView extends StatefulWidget {
   static const route = '/ProfileView';
@@ -10,6 +13,8 @@ class ProfileView extends StatefulWidget {
 }
 
 class _ProfileViewState extends State<ProfileView> {
+  NavigationService _navigationService = serviceLocator<NavigationService>();
+
   @override
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as ProfileViewArgs;
@@ -23,7 +28,7 @@ class _ProfileViewState extends State<ProfileView> {
               width: 100,
               height: 100,
               child: Image.network(
-                args.pictureUrl,
+                args.pictureUrl!,
                 fit: BoxFit.fill,
               ),
             ),
@@ -51,13 +56,22 @@ class _ProfileViewState extends State<ProfileView> {
   ///
   /// Logout
   ///
-  void _logout() {}
+  void _logout() {
+    final args = ModalRoute.of(context)!.settings.arguments as ProfileViewArgs;
+
+    if (args.providerCode == "google") {
+      GoogleLoginService.logOut();
+    }
+
+    _navigationService.goBack();
+  }
 }
 
 class ProfileViewArgs {
-  final String name;
+  final String? name;
   final String email;
-  final String pictureUrl;
+  final String? pictureUrl;
+  final String providerCode;
 
-  ProfileViewArgs(this.name, this.email, this.pictureUrl);
+  ProfileViewArgs(this.name, this.email, this.pictureUrl, this.providerCode);
 }

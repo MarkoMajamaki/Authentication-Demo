@@ -172,7 +172,6 @@ namespace AuthApi
 
         [HttpGet]
         [Route("Test")]  
-        [Authorize]
         public string Test()
         {
             return "Test";

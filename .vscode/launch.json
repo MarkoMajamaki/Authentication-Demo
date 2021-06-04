@@ -25,6 +25,7 @@
             "name": "Frontend",
             "type": "dart",
             "request": "launch",
+            "args": ["--web-port", "8000"],
             "program": "frontend/lib/main.dart"
         },        
     ],

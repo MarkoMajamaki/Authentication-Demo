@@ -1,7 +1,6 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:frontend/auth/facebook/facebook_login.dart';
-import 'package:frontend/auth/google/google_login.dart';
-import 'package:frontend/auth/user.dart';
+import 'package:frontend/services/facebook_login_services.dart';
+import 'package:frontend/services/google_login_service.dart';
+import 'package:frontend/core/user.dart';
 import 'package:frontend/services/navigation_service.dart';
 import 'package:frontend/services/servicelocator.dart';
 import 'package:frontend/views/profile_view.dart';
@@ -13,12 +12,11 @@ class LoginViewModel {
   /// Login with Facebook
   ///
   void loginFacebook() async {
-    FacebookLogin fb = FacebookLogin(
-      env["Facebook_AppId"]!,
-      env["Facebook_AppSecret"]!,
-    );
+    User? user = await FacebookLoginService.login();
 
-    User user = await fb.authenticate();
+    if (user == null) {
+      return;
+    }
 
     _navigationService.navigate(
       ProfileView.route,
@@ -26,6 +24,7 @@ class LoginViewModel {
         user.name,
         user.email,
         user.pictureUri,
+        "facebook",
       ),
     );
   }
@@ -34,12 +33,11 @@ class LoginViewModel {
   /// Login with Google
   ///
   void loginGoogle() async {
-    GoogleLogin gl = GoogleLogin(
-      env["Google_ClientId"]!,
-      env["Google_ClientSecret"]!,
-    );
+    User? user = await GoogleLoginService.login();
 
-    User user = await gl.authenticate();
+    if (user == null) {
+      return;
+    }
 
     _navigationService.navigate(
       ProfileView.route,
@@ -47,6 +45,7 @@ class LoginViewModel {
         user.name,
         user.email,
         user.pictureUri,
+        "google",
       ),
     );
   }

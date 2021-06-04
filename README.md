@@ -23,10 +23,16 @@ sh deployment/deploy-kind.sh destroy
 ## Deployment with docker compose
 ```bash
 # Deploy
-docker-compose -f deployment/docker-compose.yml up
+docker-compose -f deployment/docker-compose.yaml up
 
 # Destroy
-docker-compose -f deployment/docker-compose.yml down
+docker-compose -f deployment/docker-compose.yaml down
+```
+
+## Deploy only SQL Server
+
+```bash
+docker-compose -f "deployment/docker-compose.yaml" up -d --build sqlserver
 ```
 
 ## Test
