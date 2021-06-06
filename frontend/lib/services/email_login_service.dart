@@ -39,15 +39,13 @@ class EmailLoginService {
     client.badCertificateCallback =
         ((X509Certificate cert, String host, int port) => true);
 
-    final body = json.encode({
-      "Email": "$email",
-      "Password": "$password",
-    });
-
     final request = await client.postUrl(Uri.parse(loginEmailUrl));
     request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
-    request.write(body);
+    request.write(json.encode({
+      "Email": "$email",
+      "Password": "$password",
+    }));
 
     HttpClientResponse response = await request.close();
 

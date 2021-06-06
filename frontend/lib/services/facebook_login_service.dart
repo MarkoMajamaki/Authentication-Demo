@@ -19,10 +19,6 @@ class FacebookLoginService {
     if (result.status == LoginStatus.success) {
       final AccessToken accessToken = result.accessToken!;
 
-      final body = json.encode({
-        "Token": "${accessToken.token}",
-      });
-
       HttpClient client = new HttpClient();
       client.badCertificateCallback =
           ((X509Certificate cert, String host, int port) => true);
@@ -30,7 +26,9 @@ class FacebookLoginService {
       final request = await client.postUrl(Uri.parse(loginFacebookUrl));
       request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
       request.headers.set(HttpHeaders.acceptHeader, "application/json");
-      request.write(body);
+      request.write(json.encode({
+        "Token": "${accessToken.token}",
+      }));
 
       HttpClientResponse response = await request.close();
 

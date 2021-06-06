@@ -5,8 +5,7 @@ class User {
   final String? userName;
   final String email;
   final String? pictureUri;
-
-  Token? token;
+  final Token? token;
 
   User(
       {required this.id,

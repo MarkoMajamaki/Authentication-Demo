@@ -25,15 +25,12 @@ class GoogleLoginService {
     client.badCertificateCallback =
         ((X509Certificate cert, String host, int port) => true);
 
-    final params = {
-      "Token": "${auth.idToken}",
-    };
-
-    final body = json.encode(params);
     final request = await client.postUrl(Uri.parse(loginGoogleUrl));
     request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
     request.headers.set(HttpHeaders.acceptHeader, "application/json");
-    request.write(body);
+    request.write(json.encode({
+      "Token": "${auth.idToken}",
+    }));
 
     HttpClientResponse response = await request.close();
 
