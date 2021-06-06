@@ -55,7 +55,7 @@ namespace AuthApi
             services.AddScoped<IGoogleAuthenticationService, GoogleAuthenticationService>();
             services.AddScoped<ITokenGenerator, TokenGenerator>();
             services.Configure<FacebookAuthSettings>(Configuration.GetSection("Facebook"));  
-            services.Configure<FacebookAuthSettings>(Configuration.GetSection("Google"));  
+            services.Configure<GoogleAuthSettings>(Configuration.GetSection("Google"));  
 
             // Add Facebook auth
             FacebookAuthSettings facebookAuth = Configuration.GetSection("Facebook").Get<FacebookAuthSettings>();

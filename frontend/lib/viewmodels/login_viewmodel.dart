@@ -1,4 +1,5 @@
-import 'package:frontend/services/facebook_login_services.dart';
+import 'package:frontend/services/email_login_service.dart';
+import 'package:frontend/services/facebook_login_service.dart';
 import 'package:frontend/services/google_login_service.dart';
 import 'package:frontend/core/user.dart';
 import 'package:frontend/services/navigation_service.dart';
@@ -21,7 +22,7 @@ class LoginViewModel {
     _navigationService.navigate(
       ProfileView.route,
       arguments: ProfileViewArgs(
-        user.name,
+        user.userName,
         user.email,
         user.pictureUri,
         "facebook",
@@ -42,10 +43,53 @@ class LoginViewModel {
     _navigationService.navigate(
       ProfileView.route,
       arguments: ProfileViewArgs(
-        user.name,
+        user.userName,
         user.email,
         user.pictureUri,
         "google",
+      ),
+    );
+  }
+
+  ///
+  /// Login with email
+  ///
+  void loginWithEmail(String email, String password) async {
+    User? user = await EmailLoginService.login(email, password);
+
+    if (user == null) {
+      return;
+    }
+
+    _navigationService.navigate(
+      ProfileView.route,
+      arguments: ProfileViewArgs(
+        user.userName,
+        user.email,
+        user.pictureUri,
+        "email",
+      ),
+    );
+  }
+
+  ///
+  /// Register with email
+  ///
+  void registerWithEmail(String email, String password) async {
+    await EmailLoginService.register(email, password);
+    User? user = await EmailLoginService.login(email, password);
+
+    if (user == null) {
+      return;
+    }
+
+    _navigationService.navigate(
+      ProfileView.route,
+      arguments: ProfileViewArgs(
+        user.userName,
+        user.email,
+        user.pictureUri,
+        "email",
       ),
     );
   }

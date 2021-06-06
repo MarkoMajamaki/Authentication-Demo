@@ -18,6 +18,21 @@ class _LoginViewState extends State<LoginView> {
   LoginViewModes _mode = LoginViewModes.Login;
   LoginViewModel _viewModel = serviceLocator<LoginViewModel>();
 
+  late TextEditingController _loginEmailTextController;
+  late TextEditingController _loginPasswordTextController;
+
+  late TextEditingController _registerEmailTextController;
+  late TextEditingController _registerPasswordTextController;
+
+  @override
+  void initState() {
+    super.initState();
+    _loginEmailTextController = TextEditingController();
+    _loginPasswordTextController = TextEditingController();
+    _registerEmailTextController = TextEditingController();
+    _registerPasswordTextController = TextEditingController();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -77,17 +92,25 @@ class _LoginViewState extends State<LoginView> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: TextField(
+                        controller: _loginEmailTextController,
                         decoration: _textFieldDecoration("Email"),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24),
                       child: TextField(
+                        controller: _loginPasswordTextController,
+                        obscureText: true,
                         decoration: _textFieldDecoration("Password"),
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: () => () {},
+                      onPressed: () {
+                        _viewModel.loginWithEmail(
+                          _loginEmailTextController.text,
+                          _loginPasswordTextController.text,
+                        );
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text("Log In"),
@@ -175,6 +198,7 @@ class _LoginViewState extends State<LoginView> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: TextField(
+                        controller: _registerEmailTextController,
                         decoration: _textFieldDecoration("Email"),
                       ),
                     ),
@@ -187,17 +211,25 @@ class _LoginViewState extends State<LoginView> {
                     Padding(
                       padding: const EdgeInsets.only(bottom: 4),
                       child: TextField(
+                        controller: _registerPasswordTextController,
+                        obscureText: true,
                         decoration: _textFieldDecoration("Password"),
                       ),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 24),
                       child: TextField(
+                        obscureText: true,
                         decoration: _textFieldDecoration("Type password again"),
                       ),
                     ),
                     OutlinedButton(
-                      onPressed: () => () {},
+                      onPressed: () {
+                        _viewModel.registerWithEmail(
+                          _registerEmailTextController.text,
+                          _registerPasswordTextController.text,
+                        );
+                      },
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Text("Sign Up"),

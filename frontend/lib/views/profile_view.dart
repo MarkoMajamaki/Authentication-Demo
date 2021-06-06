@@ -24,14 +24,15 @@ class _ProfileViewState extends State<ProfileView> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(
-              width: 100,
-              height: 100,
-              child: Image.network(
-                args.pictureUrl!,
-                fit: BoxFit.fill,
+            if (args.pictureUrl != null)
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: Image.network(
+                  args.pictureUrl!,
+                  fit: BoxFit.fill,
+                ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Text("${args.name}"),

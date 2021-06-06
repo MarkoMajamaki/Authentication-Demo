@@ -6,7 +6,6 @@ using System.Threading;
 using AuthApi.Application;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Authorization;
 using System;
 
 namespace AuthApi
@@ -16,10 +15,17 @@ namespace AuthApi
     public class AuthController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IFacebookAuthenticationService _facebookAuthService;
+        private readonly IGoogleAuthenticationService _googleAuthService;
 
-        public AuthController(IMediator mediator)
+        public AuthController(
+        IMediator mediator, 
+        IFacebookAuthenticationService facebookAuthService, 
+        IGoogleAuthenticationService googleAuthService)
         {
             _mediator = mediator;
+            _facebookAuthService = facebookAuthService;
+            _googleAuthService = googleAuthService;
         }
 
         [HttpPost]  
@@ -28,11 +34,12 @@ namespace AuthApi
         { 
             try 
             {
-                JwtSecurityToken token = await _mediator.Send(new LoginCommand(model.Username, model.Password), new CancellationToken());
+                LoginResponse response = await _mediator.Send(new LoginCommand(model.Email, model.Password), new CancellationToken());
                 
                 return Ok(new {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),  
-                    expiration = token.ValidTo  
+                    UserId = response.UserId,
+                    Token = new JwtSecurityTokenHandler().WriteToken(response.Token),  
+                    Expiration = response.Token.ValidTo,
                 });
             }
             catch (InvalidPasswordException)
@@ -51,7 +58,7 @@ namespace AuthApi
         {  
             try 
             {
-                await _mediator.Send(new RegisterCommand(model.Username, model.Email, model.Password), new CancellationToken());
+                await _mediator.Send(new RegisterCommand(model.Email, model.Password), new CancellationToken());
                 
                 return Ok(new {
                     Status = "Success", 
@@ -87,7 +94,7 @@ namespace AuthApi
         {  
             try 
             {
-                await _mediator.Send(new RegisterAdminCommand(model.Username, model.Email, model.Password), new CancellationToken());
+                await _mediator.Send(new RegisterAdminCommand(model.Email, model.Password), new CancellationToken());
                 
                 return Ok(new {
                     Status = "Success", 
@@ -126,11 +133,12 @@ namespace AuthApi
         { 
             try 
             {
-                JwtSecurityToken token = await _mediator.Send(new LoginFacebookCommand(model.Token), new CancellationToken());
+                LoginResponse response = await _mediator.Send(new LoginExternalCommand(model.Token, _facebookAuthService), new CancellationToken());
                 
                 return Ok(new {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),  
-                    expiration = token.ValidTo  
+                    UserId = response.UserId,
+                    Token = new JwtSecurityTokenHandler().WriteToken(response.Token),  
+                    Expiration = response.Token.ValidTo  
                 });
             }
             catch (InvalidPasswordException)
@@ -153,11 +161,12 @@ namespace AuthApi
         { 
             try 
             {
-                JwtSecurityToken token = await _mediator.Send(new LoginGoogleCommand(model.Token, "GOOGLE"), new CancellationToken());
+                LoginResponse response = await _mediator.Send(new LoginExternalCommand(model.Token, _googleAuthService), new CancellationToken());
                 
                 return Ok(new {
-                    token = new JwtSecurityTokenHandler().WriteToken(token),  
-                    expiration = token.ValidTo  
+                    UserId = response.UserId,
+                    Token = new JwtSecurityTokenHandler().WriteToken(response.Token),  
+                    Expiration = response.Token.ValidTo  
                 });
             }
             catch (InvalidPasswordException)

@@ -59,5 +59,36 @@ namespace AuthApi.Application
                 signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)  
                 );  
         }
+
+        /// <summary>
+        /// Create JWT token for user
+        /// </summary>
+        public async Task<JwtSecurityToken> GenerateTokenForAdminAsync(ApplicationUser user)
+        {
+            var userRoles = await _userManager.GetRolesAsync(user);  
+
+            var authClaims = new List<Claim>  
+            {  
+                new Claim(ClaimTypes.Name, user.UserName),  
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),  
+            };  
+
+            foreach (var userRole in userRoles)  
+            {  
+                authClaims.Add(new Claim(ClaimTypes.Role, userRole));  
+            }  
+
+            string jwtSected = _configuration["JWT:Secret"];
+
+            var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSected));  
+
+            return new JwtSecurityToken(  
+                issuer: _configuration["JWT:ValidIssuer"],  
+                audience: _configuration["JWT:ValidAudience"],  
+                expires: DateTime.Now.AddHours(3),  
+                claims: authClaims,  
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)  
+                );  
+        }
     }
 }

@@ -14,7 +14,7 @@ using AuthApi.Domain;
 
 namespace AuthApi.Application
 {
-    public class LoginCommand : IRequest<JwtSecurityToken>
+    public class LoginCommand : IRequest<LoginResponse>
     {
         public string Username { get; private set; }    
         public string Password { get; private set; }  
@@ -26,7 +26,7 @@ namespace AuthApi.Application
         }
     }
     
-    public interface ILoginCommandHandler : IRequestHandler<LoginCommand, JwtSecurityToken>
+    public interface ILoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     {
     }
 
@@ -43,7 +43,7 @@ namespace AuthApi.Application
             _configuration = configuration;
         }
 
-        public async Task<JwtSecurityToken> Handle(LoginCommand request, CancellationToken cancellationToken)
+        public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
             var user = await _userManager.FindByNameAsync(request.Username);  
             if (user == null)
@@ -72,13 +72,14 @@ namespace AuthApi.Application
 
             var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSected));  
 
-            return new JwtSecurityToken(  
+            JwtSecurityToken token = new JwtSecurityToken(  
                 issuer: _configuration["JWT:ValidIssuer"],  
                 audience: _configuration["JWT:ValidAudience"],  
                 expires: DateTime.Now.AddHours(3),  
                 claims: authClaims,  
-                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)  
-                );  
+                signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256));
+                
+            return new LoginResponse(user.Id, token);
         }
     }
 }

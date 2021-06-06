@@ -1,15 +1,12 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace AuthApi.Application
 {
-    public interface IFacebookAuthenticationService
+    public interface IFacebookAuthenticationService : IExternalAuthenticationService
     {
-        Task<FacebookTokenValidationResponse> ValidateAccessTokenAsync(string accessToken);
-        Task<FacebookUserInfoResponse> GetUserInfoAsync(string accessToken);
     }
 
     public class FacebookAuthenticationService : IFacebookAuthenticationService
@@ -30,7 +27,21 @@ namespace AuthApi.Application
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<FacebookTokenValidationResponse> ValidateAccessTokenAsync(string accessToken)
+        public async Task<UserInfo> AuthenticateAsync(string accessToken)
+        {
+            FacebookTokenValidationResponse validationResponse = await ValidateAccessTokenAsync(accessToken);
+
+            if (!validationResponse.Data.IsValid)
+            {
+                throw new InvalidTokenException();
+            }
+
+            var userInfo = await GetUserInfoAsync(accessToken);
+
+            return new UserInfo(userInfo.Email, $"{userInfo.LastName} {userInfo.FirstName}");
+        }
+
+        private async Task<FacebookTokenValidationResponse> ValidateAccessTokenAsync(string accessToken)
         {
             var fromattedUrl = string.Format(_tokenValidationUrl, accessToken, _facebookAuthSettings.AppId, _facebookAuthSettings.AppSecret);
             var result = await _httpClientFactory.CreateClient().GetAsync(fromattedUrl);
@@ -39,7 +50,7 @@ namespace AuthApi.Application
             return JsonConvert.DeserializeObject<FacebookTokenValidationResponse>(resposeAsString);
         }
 
-        public async Task<FacebookUserInfoResponse> GetUserInfoAsync(string accessToken)
+        private async Task<FacebookUserInfoResponse> GetUserInfoAsync(string accessToken)
         {
             var fromattedUrl = string.Format(_userInfoUrl, accessToken);
             var result = await _httpClientFactory.CreateClient().GetAsync(fromattedUrl);

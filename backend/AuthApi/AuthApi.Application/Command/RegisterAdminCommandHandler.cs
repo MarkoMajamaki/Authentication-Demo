@@ -10,13 +10,11 @@ namespace AuthApi.Application
 {
     public class RegisterAdminCommand : IRequest<bool>
     {
-        public string Username { get; set; }  
         public string Email { get; set; }    
         public string Password { get; set; }  
 
-        public RegisterAdminCommand(string userName, string emain, string password)
+        public RegisterAdminCommand(string emain, string password)
         {
-            Username = userName;
             Email = emain;
             Password = password;
         }
@@ -41,28 +39,35 @@ namespace AuthApi.Application
 
         public async Task<bool> Handle(RegisterAdminCommand request, CancellationToken cancellationToken)
         {
-            var userExists = await _userManager.FindByNameAsync(request.Username);  
+            var userExists = await _userManager.FindByEmailAsync(request.Email);  
             if (userExists != null)  
             {
                 throw new UserAlreadyExistException();
             }
   
-            ApplicationUser user = new ApplicationUser()  
+            var user = new ApplicationUser()  
             {  
                 Email = request.Email,  
+                UserName = request.Email,  
                 SecurityStamp = Guid.NewGuid().ToString(),  
-                UserName = request.Username  
             };  
+
             var result = await _userManager.CreateAsync(user, request.Password);  
+
             if (!result.Succeeded)  
             {
                 throw new UserCreationFailedException();
             }
   
             if (!await _roleManager.RoleExistsAsync(UserRoles.Admin))  
+            {
                 await _roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));  
+            }
+
             if (!await _roleManager.RoleExistsAsync(UserRoles.User))  
+            {
                 await _roleManager.CreateAsync(new IdentityRole(UserRoles.User));  
+            }
   
             if (await _roleManager.RoleExistsAsync(UserRoles.Admin))  
             {  
