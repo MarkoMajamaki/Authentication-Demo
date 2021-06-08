@@ -22,10 +22,10 @@
         },
         {
             "name": "Frontend",
-            "type": "dart",
+            "cwd": "frontend",
             "request": "launch",
+            "type": "dart",
             "args": ["--web-port", "8000"],
-            "program": "frontend/lib/main.dart"
         },        
     ],
     "compounds": [
