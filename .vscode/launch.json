@@ -25,7 +25,7 @@
             "cwd": "frontend",
             "request": "launch",
             "type": "dart",
-            "args": ["--web-port", "8000"],
+            "args": ["--web-port", "5000"],
         },        
     ],
     "compounds": [

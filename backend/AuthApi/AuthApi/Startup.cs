@@ -21,6 +21,8 @@ namespace AuthApi
 {
     public class Startup
     {
+        private const string _corsPolicyName = "DevelopmentPolicy";
+
         public IConfiguration Configuration { get; }
 
         public Startup(IConfiguration configuration)
@@ -32,6 +34,16 @@ namespace AuthApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+
+            services.AddCors(options => 
+            {
+                options.AddPolicy(_corsPolicyName, builder => 
+                {
+                    builder
+                    .AllowAnyOrigin()
+                    .AllowAnyHeader();
+                });
+            });
 
             services.AddMediatR(Assembly.GetExecutingAssembly());
             services.AddMediatR(typeof(LoginCommand).GetTypeInfo().Assembly);
@@ -123,6 +135,11 @@ namespace AuthApi
 
             app.UseRouting();
   
+            if (env.IsDevelopment())
+            {
+                app.UseCors(_corsPolicyName);
+            }
+
             app.UseAuthentication();  
             app.UseAuthorization();  
 

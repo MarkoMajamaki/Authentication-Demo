@@ -7,11 +7,13 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:frontend/core/token.dart';
 import 'package:frontend/core/user.dart';
 
+import 'package:http/http.dart' as http;
+
 class FacebookLoginService {
   ///
   /// Login with Facebook authentication
   ///
-  static Future<User> login() async {
+  static Future<User?> login() async {
     final LoginResult result = await FacebookAuth.instance.login(
       loginBehavior: LoginBehavior.webOnly,
     );
@@ -19,26 +21,25 @@ class FacebookLoginService {
     if (result.status == LoginStatus.success) {
       final AccessToken accessToken = result.accessToken!;
 
-      HttpClient client = new HttpClient();
-      client.badCertificateCallback =
-          ((X509Certificate cert, String host, int port) => true);
+      final request = await http.post(
+        Uri.parse(loginFacebookUrl),
+        headers: {
+          HttpHeaders.contentTypeHeader: "application/json",
+          HttpHeaders.acceptHeader: "application/json",
+        },
+        body: json.encode(
+          {
+            "Token": "${accessToken.token}",
+          },
+        ),
+      );
 
-      final request = await client.postUrl(Uri.parse(loginFacebookUrl));
-      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-      request.headers.set(HttpHeaders.acceptHeader, "application/json");
-      request.write(json.encode({
-        "Token": "${accessToken.token}",
-      }));
-
-      HttpClientResponse response = await request.close();
-
-      if (response.statusCode != 200) {
-        throw response.reasonPhrase;
+      if (request.statusCode != 200) {
+        throw request.reasonPhrase ?? "";
       }
 
-      // Parse our system access token
-      String tokenJson = await response.transform(utf8.decoder).join();
-      Token token = Token.fromJson(jsonDecode(tokenJson));
+      // Our system access token
+      Token token = Token.fromJson(jsonDecode(request.body));
 
       // Get facebook user data
       final userData = await FacebookAuth.instance.getUserData();

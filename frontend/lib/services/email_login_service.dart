@@ -5,56 +5,56 @@ import 'package:frontend/core/api.dart';
 import 'package:frontend/core/token.dart';
 import 'package:frontend/core/user.dart';
 
+import 'package:http/http.dart' as http;
+
 class EmailLoginService {
   ///
   /// Register new user
   ///
   static Future register(String email, String password) async {
-    HttpClient client = new HttpClient();
-    client.badCertificateCallback =
-        ((X509Certificate cert, String host, int port) => true);
+    final request = await http.post(
+      Uri.parse(registerEmailUrl),
+      headers: {
+        HttpHeaders.contentTypeHeader: "application/json",
+        HttpHeaders.acceptHeader: "application/json",
+      },
+      body: json.encode(
+        {
+          "Email": "$email",
+          "Password": "$password",
+        },
+      ),
+    );
 
-    final body = json.encode({
-      "Email": "$email",
-      "Password": "$password",
-    });
-
-    final request = await client.postUrl(Uri.parse(registerEmailUrl));
-    request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-    request.headers.set(HttpHeaders.acceptHeader, "application/json");
-    request.write(body);
-
-    HttpClientResponse response = await request.close();
-
-    if (response.statusCode != 200) {
-      throw response.reasonPhrase;
+    if (request.statusCode != 200) {
+      throw request.reasonPhrase ?? "";
     }
   }
 
   ///
   /// Login with email
   ///
-  static Future<User> login(String email, String password) async {
-    HttpClient client = new HttpClient();
-    client.badCertificateCallback =
-        ((X509Certificate cert, String host, int port) => true);
+  static Future<User?> login(String email, String password) async {
+    final request = await http.post(
+      Uri.parse(loginEmailUrl),
+      headers: {
+        HttpHeaders.contentTypeHeader: "application/json",
+        HttpHeaders.acceptHeader: "application/json",
+      },
+      body: json.encode(
+        {
+          "Email": "$email",
+          "Password": "$password",
+        },
+      ),
+    );
 
-    final request = await client.postUrl(Uri.parse(loginEmailUrl));
-    request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-    request.headers.set(HttpHeaders.acceptHeader, "application/json");
-    request.write(json.encode({
-      "Email": "$email",
-      "Password": "$password",
-    }));
-
-    HttpClientResponse response = await request.close();
-
-    if (response.statusCode != 200) {
-      throw response.reasonPhrase;
+    if (request.statusCode != 200) {
+      throw request.reasonPhrase ?? "";
     }
 
-    String tokenJson = await response.transform(utf8.decoder).join();
-    Token token = Token.fromJson(jsonDecode(tokenJson));
+    // Our system access token
+    Token token = Token.fromJson(jsonDecode(request.body));
 
     return User(
       id: token.userId,

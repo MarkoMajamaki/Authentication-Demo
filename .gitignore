@@ -10,7 +10,8 @@ backend/AuthApi/Tests/AuthApi.IntegrationTest/bin
 backend/AuthApi/Tests/AuthApi.IntegrationTest/obj
 backend/AuthApi/Tests/AuthApi.UnitTest/bin
 backend/AuthApi/Tests/AuthApi.UnitTest/obj
-deployment/certs
+deployment/certs/tls.crt
+deployment/certs/tls.key
 deployment/data
 frontend/android/app/mykey.jks
 frontend/ios/build/

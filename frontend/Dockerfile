@@ -26,6 +26,10 @@ COPY . /app/
 WORKDIR /app/
 RUN flutter build web
 
-# Stage 2 - Create the run-time image
-FROM nginx
-COPY --from=build-env /app/build/web /usr/share/nginx/html
+EXPOSE 5000
+
+# Set the server startup script as executable
+RUN ["chmod", "+x", "/app/server/server.sh"]
+
+# Start the web server
+ENTRYPOINT [ "/app/server/server.sh" ]

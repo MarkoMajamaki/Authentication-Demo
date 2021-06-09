@@ -1,11 +1,16 @@
 import 'dart:core';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
+
 String get baseUrl {
-  if (Platform.isAndroid) {
-    return "https://10.0.2.2:8004";
+  // Jos K8S nii tällöin api-auth!
+  if (kIsWeb) {
+    return "https://localhost:5001";
+  } else if (Platform.isAndroid) {
+    return "https://10.0.2.2:5001";
   } else {
-    return "https://localhost:8004";
+    return "https://localhost:5001";
   }
 }
 
